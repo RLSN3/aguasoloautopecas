@@ -486,7 +486,7 @@ html.intro-on .hero-grid>div:first-child>*,html.intro-on .hero-grid>.card{animat
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-  gtag('config', 'G-6RQ79D81T2');
+  gtag('config', 'G-6RQ79D81T2', {transport_type: 'beacon'});
 </script>
 </head>
 <body>
@@ -689,10 +689,14 @@ function gaEvent(name,params){if(typeof window.gtag==='function')window.gtag('ev
 document.addEventListener('click',function(e){
   var a=e.target.closest&&e.target.closest('a[href]');if(!a)return;
   var u;try{u=new URL(a.href,location.href)}catch(_){return}
-  var host=u.hostname.toLowerCase(),txt=(a.textContent||'').trim().slice(0,80);
-  if(host==='wa.me'||host==='api.whatsapp.com')gaEvent('whatsapp_click',{contact_method:'whatsapp',button_text:txt||'WhatsApp',transport_type:'beacon'});
-  else if(u.protocol==='tel:')gaEvent('phone_click',{contact_method:'phone',button_text:txt||'Telefone',transport_type:'beacon'});
-  else if(host==='google.com'&&u.pathname.indexOf('/maps')===0)gaEvent('directions_click',{contact_method:'maps',button_text:txt||'Como chegar',transport_type:'beacon'});
+  var host=u.hostname.toLowerCase().replace(/^www\./,''),txt=(a.textContent||a.getAttribute('aria-label')||'').trim().slice(0,80);
+  if(host==='wa.me'||host==='whatsapp.com'||host.endsWith('.whatsapp.com')){
+    gaEvent('whatsapp_click',{contact_method:'whatsapp',button_text:txt||'WhatsApp',link_url:u.hostname+u.pathname});
+  }else if(u.protocol==='tel:'){
+    gaEvent('phone_click',{contact_method:'phone',button_text:txt||'Telefone'});
+  }else if((host==='google.com'&&u.pathname.indexOf('/maps')===0)||host==='maps.app.goo.gl'||host==='maps.google.com'){
+    gaEvent('directions_click',{contact_method:'maps',button_text:txt||'Como chegar',link_url:u.hostname+u.pathname});
+  }
 },true);
 var f=document.getElementById('f'),A=document.getElementById('a'),B=document.getElementById('b'),gb=document.getElementById('go');
 var card=document.getElementById('pedido'),sr=document.getElementById('sr'),EA=document.getElementById('ea'),EB=document.getElementById('eb'),fb=document.getElementById('fb'),fine=matchMedia('(pointer:fine)');
@@ -757,7 +761,7 @@ function enviar(e){var t=tipo(),c=T[t],a=A.value.trim(),b=B.value.trim();
   var m1=A.required&&!a,m2=B.required&&!b;ok(A,EA);ok(B,EB);
   if(m1)bad(A,EA,c[8]);if(m2)bad(B,EB,c[9]);
   if(m1||m2){e.preventDefault();(m1?A:B).focus();return}
-  gaEvent('quote_request',{product_type:H[t],transport_type:'beacon'});
+  gaEvent('quote_request',{product_type:H[t],form_id:'f'});gaEvent('whatsapp_click',{contact_method:'whatsapp',button_text:'Enviar pelo WhatsApp',source:'quote_form'});
   var m='Olá! Preciso de um orçamento.\nTipo: '+H[t]+(a?'\n'+c[6]+': '+a:'')+(sel.length?'\n'+c[7]+(sel.length>1?'s':'')+': '+sel.join(', ')+(b?'\nDetalhes: '+b:''):(b?'\n'+c[7]+': '+b:''));
   e.preventDefault();
   var iab=/Instagram|FBAN|FBAV|FB_IAB|Snapchat|Line\//i.test(navigator.userAgent);
